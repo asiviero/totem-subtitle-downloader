@@ -358,6 +358,8 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
         languages =      builder.get_object('language_model')
        	hash_or_title_combobox = builder.get_object('file_hash_title')
         hash_filename_model = builder.get_object('hash_filename_model');
+        save_same_location_select = builder.get_object('save_same_location');
+        self.save_same_location = True;
         self.progress =  builder.get_object('progress_bar')
         self.treeview =  builder.get_object('subtitle_treeview')
         self.liststore = builder.get_object('subtitle_model')
@@ -426,6 +428,7 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
 
         combobox_changed_id = combobox.connect('changed', self.on_combobox__changed)
         hash_or_file_combobox_changed_id = hash_or_title_combobox.connect('changed',self.on_hash_or_filename_combobox__changed);
+        save_same_location_select_changed_id = save_same_location_select.connect('toggled',self.on_save_same_select__changed);
 	self.dialog.connect ('delete-event', self.dialog.hide_on_delete)
 	self.dialog.set_transient_for (self.totem.get_main_window())
 	self.dialog.set_position (Gtk.WindowPosition.CENTER_ON_PARENT)
@@ -552,7 +555,7 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
 
             gfile = None
 
-            if not filename:
+            if not self.save_same_location:
                 directory = Gio.file_new_for_path(xdg.BaseDirectory.xdg_cache_home + sep + 'totem' + sep + 'subtitles' + sep) 
                 if not directory.query_exists(None):
                     if not path.exists (xdg.BaseDirectory.xdg_cache_home + sep + 'totem' + sep):
@@ -565,6 +568,11 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
                 file = Gio.file_new_for_path(self.filename)
                 movie_name = file.get_basename().rpartition('.')[0]
                 filename = directory.get_uri() + sep + movie_name + '.' + subtitle_format
+            else :
+            	# replace filename extension
+            	filename = filename.split(".");
+            	filename[-1] = subtitle_format;
+            	filename = ''.join(filename);
 
             self.model.subtitles = ''
 
@@ -627,8 +635,8 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
         self.apply_button.set_sensitive(False)
         self.find_button.set_sensitive(False)
         self.action.set_sensitive(False)
-        self.treeview.set_sensitive(False)
-        self.os_save_selected_subtitle()
+        self.treeview.set_sensitive(False)              
+        self.os_save_selected_subtitle(self.filename)
 
     # Callbacks
 
@@ -681,9 +689,11 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
         self.settings.set_string('language', self.model.lang)
         
     def on_hash_or_filename_combobox__changed(self, hash_or_file_combobox):
-    	print "Aqui";
     	iter = hash_or_file_combobox.get_active_iter();
 	self.model.hash_or_filename = hash_or_file_combobox.get_model().get_value(iter,0);
+	
+    def on_save_same_select__changed(self,select) :
+    	self.save_same_location = select.get_active();
 
     def on_close_clicked(self, data):
         self.dialog.destroy()
@@ -691,7 +701,7 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
 
     def on_apply_clicked(self, data):
 	self.os_download_and_apply()
-
+	
     def on_find_clicked(self, data):
         self.apply_button.set_sensitive(False)
         self.find_button.set_sensitive(False)
