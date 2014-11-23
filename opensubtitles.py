@@ -351,7 +351,7 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
     # UI related code
 
     def os_build_dialog(self, action):
-        builder = Totem.plugin_load_interface ("opensubtitles", "opensubtitles.ui", True, self.totem.get_main_window (), self)
+        builder = Totem.plugin_load_interface ("opensubtitles", "opensubtitles.ui", True, self.totem.get_main_window(), None)
 
         # Obtain all the widgets we need to initialize
         combobox =       builder.get_object('language_combobox')
