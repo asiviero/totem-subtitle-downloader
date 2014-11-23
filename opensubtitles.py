@@ -11,7 +11,7 @@ from gi.repository import GObject
 import xmlrpclib
 import threading
 import xdg.BaseDirectory
-from os import sep, path, mkdir
+from os import sep, path, mkdir,rename
 import gettext
 
 from hash import hashFile
@@ -570,10 +570,9 @@ class OpenSubtitles(GObject.Object, Peas.Activatable):
                 filename = directory.get_uri() + sep + movie_name + '.' + subtitle_format
             else :
             	# replace filename extension
-            	filename = filename.split(".");
-            	filename[-1] = subtitle_format;
-            	filename = ''.join(filename);
-
+		root, ext = path.splitext(filename)
+		filename = root + "." + subtitle_format;
+		
             self.model.subtitles = ''
 
             thread = DownloadThread(self.model, subtitle_id)
