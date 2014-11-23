@@ -260,8 +260,6 @@ class OpenSubtitlesModel(object):
         """
         self.message = ''
         if self.os_login():
-	    print self.filename
-	    print self.hash_or_filename;
 	    if(self.hash_or_filename == DOWNLOAD_BY_HASH) :	    	
 	            searchdata = {'sublanguageid': self.lang,
 	                          'moviehash'    : self.hash, 
@@ -271,7 +269,6 @@ class OpenSubtitlesModel(object):
 	                          'query' : self.filename}
             try:
                 result = self.server.SearchSubtitles(self.token, [searchdata])
-		print result
             except xmlrpclib.ProtocolError:
                 self.message = _(u'Could not contact the OpenSubtitles website')
 
